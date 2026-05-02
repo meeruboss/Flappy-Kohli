@@ -1,295 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Kohli Fly</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --ink: #11151c;
+      --paper: #f7efe2;
+      --blue: #1f4fa3;
+      --orange: #f36f21;
+      --gold: #f6c44f;
+      --grass: #287b46;
+      --shadow: rgba(9, 12, 18, 0.28);
+    }
 
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 20% 12%, rgba(246, 196, 79, 0.28), transparent 28%),
+        linear-gradient(135deg, #0c1930 0%, #101821 48%, #1c382f 100%);
+      color: var(--paper);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      overflow: hidden;
+    }
+
+    .shell {
+      width: min(100vw, 560px);
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 16px;
+      gap: 12px;
+    }
+
+    header,
+    footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 40px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .tag {
+      color: rgba(247, 239, 226, 0.74);
+      font-size: 13px;
       font-weight: 600;
     }
 
-    .character-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 8px;
-      margin: 0 0 16px;
-    }
-
-    .character-option {
-      min-height: 58px;
-      padding: 9px;
-      border: 1px solid rgba(247, 239, 226, 0.24);
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--paper);
-      box-shadow: none;
-      text-align: left;
-    }
-
-    .character-option[aria-pressed="true"] {
-      border-color: rgba(246, 196, 79, 0.94);
-      background: rgba(246, 196, 79, 0.18);
-    }
-
-    .character-name {
-      display: block;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-size: 12px;
-      line-height: 1.2;
-      font-weight: 900;
-    }
-
-    .character-meta {
+    .scoreboard {
       display: flex;
       align-items: center;
-      gap: 6px;
-      margin-top: 6px;
-      color: rgba(247, 239, 226, 0.76);
-      font-size: 11px;
+      gap: 8px;
       font-weight: 800;
     }
 
-    .swatch {
-      width: 14px;
-      height: 14px;
-      flex: 0 0 auto;
-      border: 1px solid rgba(255, 255, 255, 0.72);
-      border-radius: 50%;
-      background: var(--swatch);
-    }
-
-    button {
-      appearance: none;
-      border: 0;
-      outline-offset: 3px;
-    }
-
-    button.character-option {
+    .scorebox {
+      min-width: 56px;
       border: 1px solid rgba(247, 239, 226, 0.24);
-      padding: 9px;
+      border-radius: 8px;
+      padding: 7px 10px;
+      text-align: center;
       background: rgba(255, 255, 255, 0.08);
-      color: var(--paper);
-      box-shadow: none;
+      box-shadow: 0 8px 22px var(--shadow);
     }
 
-    button.character-option[aria-pressed="true"] {
-      border-color: rgba(246, 196, 79, 0.94);
-      background: rgba(246, 196, 79, 0.18);
+    .game-wrap {
+      position: relative;
+      min-height: 0;
+      border: 1px solid rgba(247, 239, 226, 0.26);
+      border-radius: 8px;
+      overflow: hidden;
+      background: #5bb7db;
+      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
     }
 
-    footer {
-      color: rgba(247, 239, 226, 0.66);
-      font-size: 13px;
-      .panel {
-        padding: 18px;
-      }
-
-      .character-grid {
-        gap: 7px;
-      }
-
-      .character-option {
-        min-height: 54px;
-      }
-    }
-  </style>
-</head>
-        <div class="panel">
-          <h2 id="overlayTitle">Kohli Fly</h2>
-          <p id="overlayText">Tap, click, or press Space to keep Virat airborne between the wicket gates.</p>
-          <div class="character-grid" id="characterGrid" aria-label="Choose character"></div>
-          <button id="startButton" type="button">Start Innings</button>
-        </div>
-      </div>
-    const overlayTitle = document.querySelector("#overlayTitle");
-    const overlayText = document.querySelector("#overlayText");
-    const startButton = document.querySelector("#startButton");
-    const characterGrid = document.querySelector("#characterGrid");
-
-    const CHARACTERS = [
-      {
-        id: "koach",
-        name: "Koach Kholy",
-        jersey: "#1f4fa3",
-        accent: "#f36f21",
-        number: "18",
-        skin: "#f1b384",
-        hair: "fade",
-        beard: true,
-        lips: "#2d1710"
-      },
-      {
-        id: "bobzy",
-        name: "Bobzy the king",
-        jersey: "#168047",
-        accent: "#f7efe2",
-        number: "56",
-        skin: "#e6a875",
-        hair: "fade",
-        beard: false,
-        lips: "#4a2419"
-      },
-      {
-        id: "rizzu",
-        name: "Rizzu Symonds",
-        jersey: "#0f7a42",
-        accent: "#d8f2d3",
-        number: "16",
-        skin: "#d59868",
-        hair: "fade",
-        beard: false,
-        lips: "#f7efe2"
-      },
-      {
-        id: "smudge",
-        name: "Smudge",
-        jersey: "#f1c735",
-        accent: "#2f8f4e",
-        number: "49",
-        skin: "#f0b584",
-        hair: "spike",
-        beard: false,
-        lips: "#5c2c20"
-      }
-    ];
-
-    const state = {
-      mode: "ready",
-      width: canvas.width,
-      lastTime: 0,
-      score: 0,
-      best: Number(localStorage.getItem("kohliFlyBest") || 0),
-      selectedCharacter: localStorage.getItem("kohliFlyCharacter") || "koach",
-      shake: 0,
-      player: {
-        x: 124,
-
-    bestEl.textContent = `Best ${state.best}`;
-
-    if (!CHARACTERS.some((character) => character.id === state.selectedCharacter)) {
-      state.selectedCharacter = CHARACTERS[0].id;
-    }
-
-    function getCharacter() {
-      return CHARACTERS.find((character) => character.id === state.selectedCharacter) || CHARACTERS[0];
-    }
-
-    function renderCharacterPicker() {
-      characterGrid.innerHTML = "";
-      for (const character of CHARACTERS) {
-        const button = document.createElement("button");
-        button.className = "character-option";
-        button.type = "button";
-        button.setAttribute("aria-pressed", String(character.id === state.selectedCharacter));
-        button.style.setProperty("--swatch", character.jersey);
-        button.innerHTML = `
-          <span class="character-name">${character.name}</span>
-          <span class="character-meta"><span class="swatch"></span>#${character.number}</span>
-        `;
-        button.addEventListener("click", () => selectCharacter(character.id));
-        characterGrid.append(button);
-      }
-    }
-
-    function selectCharacter(id) {
-      state.selectedCharacter = id;
-      localStorage.setItem("kohliFlyCharacter", id);
-      renderCharacterPicker();
-      draw();
-    }
-
-    function fitCanvas() {
-      const rect = canvas.getBoundingClientRect();
-      state.dpr = Math.min(window.devicePixelRatio || 1, 2);
-
-    function drawPlayer() {
-      const p = state.player;
-      const character = getCharacter();
-      ctx.save();
-      ctx.translate(p.x, p.y);
-      ctx.rotate(p.rotation);
-
-      drawBat(-35, 7);
-
-      ctx.fillStyle = "#1f4fa3";
-      ctx.fillStyle = character.jersey;
-      roundRect(-24, -6, 48, 43, 12);
-      ctx.fill();
-      ctx.fillStyle = "#f36f21";
-      ctx.fillStyle = character.accent;
-      ctx.fillRect(-21, 8, 42, 5);
-      ctx.fillRect(-7, -4, 14, 39);
-
-      ctx.fillStyle = "#f1b384";
-      ctx.fillStyle = character.skin;
-      ctx.beginPath();
-      ctx.arc(0, -25, 23, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "#191413";
-      ctx.beginPath();
-      ctx.arc(0, -34, 24, Math.PI, Math.PI * 2);
-      ctx.fill();
-      drawHair(character.hair);
-
-      ctx.fillStyle = "#211515";
-      ctx.beginPath();
-      ctx.ellipse(0, -17, 18, 11, 0, 0, Math.PI);
-      ctx.fill();
-      ctx.fillRect(-16, -22, 32, 9);
-      if (character.beard) {
-        ctx.fillStyle = "#211515";
-        ctx.beginPath();
-        ctx.ellipse(0, -17, 18, 11, 0, 0, Math.PI);
-        ctx.fill();
-        ctx.fillRect(-16, -22, 32, 9);
-      }
-
-      ctx.fillStyle = "#ffffff";
-      ctx.beginPath();
-      ctx.arc(10, -24, 1.8, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.strokeStyle = "#2d1710";
-      ctx.strokeStyle = character.lips;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.arc(1, -16, 7, 0.08 * Math.PI, 0.92 * Math.PI);
-      ctx.font = "900 13px Inter, system-ui, sans-serif";
-      ctx.textAlign = "center";
-      ctx.textBaseline = "middle";
-      ctx.fillText("18", 0, 17);
-      ctx.fillText(character.number, 0, 17);
-
-      ctx.restore();
-    }
-
-    function drawHair(style) {
-      ctx.fillStyle = "#191413";
-      if (style === "spike") {
-        ctx.beginPath();
-        ctx.moveTo(-20, -36);
-        ctx.lineTo(-14, -55);
-        ctx.lineTo(-7, -38);
-        ctx.lineTo(0, -58);
-        ctx.lineTo(8, -38);
-        ctx.lineTo(16, -54);
-        ctx.lineTo(22, -34);
-        ctx.quadraticCurveTo(4, -45, -20, -36);
-        ctx.fill();
-        return;
-      }
-
-      ctx.beginPath();
-      ctx.arc(0, -34, 24, Math.PI, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "rgba(247, 239, 226, 0.22)";
-      ctx.fillRect(-23, -33, 7, 10);
-      ctx.fillRect(16, -33, 7, 10);
-    }
-
-    function drawBat(x, y) {
-      ctx.save();
-      ctx.translate(x, y);
-    });
-    window.addEventListener("resize", fitCanvas);
-
-    renderCharacterPicker();
-    fitCanvas();
-    draw();
-    requestAnimationFrame(loop);
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      min-height: 580px;
+      touch-action: manipulation;

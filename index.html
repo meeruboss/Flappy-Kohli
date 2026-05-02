@@ -1,536 +1,222 @@
-<!doctype html>
-<html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Kohli Fly</title>
-  <style>
-    :root {
-      color-scheme: dark;
-      --ink: #11151c;
-      --paper: #f7efe2;
-      --blue: #1f4fa3;
-      --orange: #f36f21;
-      --gold: #f6c44f;
-      --grass: #287b46;
-      --shadow: rgba(9, 12, 18, 0.28);
-    }
 
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      min-height: 100vh;
-      display: grid;
-      place-items: center;
-      background:
-        radial-gradient(circle at 20% 12%, rgba(246, 196, 79, 0.28), transparent 28%),
-        linear-gradient(135deg, #0c1930 0%, #101821 48%, #1c382f 100%);
-      color: var(--paper);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      overflow: hidden;
-    }
-
-    .shell {
-      width: min(100vw, 560px);
-      min-height: 100vh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: 16px;
-      gap: 12px;
-    }
-
-    header,
-    footer {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 12px;
-      min-height: 40px;
-    }
-
-    h1 {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1;
-      font-weight: 800;
-      letter-spacing: 0;
-    }
-
-    .tag {
-      color: rgba(247, 239, 226, 0.74);
-      font-size: 13px;
       font-weight: 600;
     }
 
-    .scoreboard {
-      display: flex;
-      align-items: center;
+    .character-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 8px;
+      margin: 0 0 16px;
+    }
+
+    .character-option {
+      min-height: 58px;
+      padding: 9px;
+      border: 1px solid rgba(247, 239, 226, 0.24);
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--paper);
+      box-shadow: none;
+      text-align: left;
+    }
+
+    .character-option[aria-pressed="true"] {
+      border-color: rgba(246, 196, 79, 0.94);
+      background: rgba(246, 196, 79, 0.18);
+    }
+
+    .character-name {
+      display: block;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-size: 12px;
+      line-height: 1.2;
+      font-weight: 900;
+    }
+
+    .character-meta {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 6px;
+      color: rgba(247, 239, 226, 0.76);
+      font-size: 11px;
       font-weight: 800;
     }
 
-    .scorebox {
-      min-width: 56px;
-      border: 1px solid rgba(247, 239, 226, 0.24);
-      border-radius: 8px;
-      padding: 7px 10px;
-      text-align: center;
-      background: rgba(255, 255, 255, 0.08);
-      box-shadow: 0 8px 22px var(--shadow);
-    }
-
-    .game-wrap {
-      position: relative;
-      min-height: 0;
-      border: 1px solid rgba(247, 239, 226, 0.26);
-      border-radius: 8px;
-      overflow: hidden;
-      background: #5bb7db;
-      box-shadow: 0 28px 70px rgba(0, 0, 0, 0.34);
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      min-height: 580px;
-      touch-action: manipulation;
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      display: grid;
-      place-items: center;
-      padding: 24px;
-      pointer-events: none;
-      background: linear-gradient(rgba(10, 20, 35, 0.08), rgba(10, 20, 35, 0.18));
-    }
-
-    .panel {
-      width: min(360px, 100%);
-      border: 1px solid rgba(255, 255, 255, 0.32);
-      border-radius: 8px;
-      padding: 20px;
-      text-align: center;
-      background: rgba(13, 22, 36, 0.72);
-      backdrop-filter: blur(14px);
-      box-shadow: 0 24px 64px rgba(0, 0, 0, 0.32);
-    }
-
-    .panel h2 {
-      margin: 0 0 8px;
-      font-size: 28px;
-      line-height: 1.05;
-      letter-spacing: 0;
-    }
-
-    .panel p {
-      margin: 0 0 16px;
-      color: rgba(247, 239, 226, 0.78);
-      line-height: 1.45;
-      font-weight: 600;
+    .swatch {
+      width: 14px;
+      height: 14px;
+      flex: 0 0 auto;
+      border: 1px solid rgba(255, 255, 255, 0.72);
+      border-radius: 50%;
+      background: var(--swatch);
     }
 
     button {
       appearance: none;
       border: 0;
-      border-radius: 8px;
-      padding: 12px 16px;
-      background: linear-gradient(135deg, var(--orange), var(--gold));
-      color: #1d160b;
-      font: inherit;
-      font-weight: 900;
-      cursor: pointer;
-      box-shadow: 0 12px 22px rgba(0, 0, 0, 0.28);
-      pointer-events: auto;
+      outline-offset: 3px;
     }
 
-    button:focus-visible {
-      outline: 3px solid rgba(247, 239, 226, 0.9);
-      outline-offset: 3px;
+    button.character-option {
+      border: 1px solid rgba(247, 239, 226, 0.24);
+      padding: 9px;
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--paper);
+      box-shadow: none;
+    }
+
+    button.character-option[aria-pressed="true"] {
+      border-color: rgba(246, 196, 79, 0.94);
+      background: rgba(246, 196, 79, 0.18);
     }
 
     footer {
       color: rgba(247, 239, 226, 0.66);
       font-size: 13px;
-      font-weight: 700;
-    }
-
-    kbd {
-      border: 1px solid rgba(247, 239, 226, 0.28);
-      border-bottom-width: 3px;
-      border-radius: 6px;
-      padding: 2px 6px;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--paper);
-      font: inherit;
-    }
-
-    .hidden {
-      display: none;
-    }
-
-    @media (max-width: 520px) {
-      .shell {
-        padding: 10px;
-        gap: 8px;
-      }
-
-      header,
-      footer {
-        min-height: 36px;
-      }
-
-      h1 {
-        font-size: 19px;
-      }
-
-      .tag {
-        display: none;
-      }
-
-      canvas {
-        min-height: calc(100vh - 104px);
-      }
-
       .panel {
         padding: 18px;
+      }
+
+      .character-grid {
+        gap: 7px;
+      }
+
+      .character-option {
+        min-height: 54px;
       }
     }
   </style>
 </head>
-<body>
-  <main class="shell">
-    <header>
-      <div>
-        <h1>Kohli Fly</h1>
-        <div class="tag">Cover-drive your way through the wickets</div>
-      </div>
-      <div class="scoreboard" aria-label="Score">
-        <div class="scorebox" id="score">0</div>
-        <div class="scorebox" id="best">Best 0</div>
-      </div>
-    </header>
-
-    <section class="game-wrap" aria-label="Kohli Fly game">
-      <canvas id="game" width="480" height="720"></canvas>
-      <div class="overlay" id="overlay">
         <div class="panel">
           <h2 id="overlayTitle">Kohli Fly</h2>
           <p id="overlayText">Tap, click, or press Space to keep Virat airborne between the wicket gates.</p>
+          <div class="character-grid" id="characterGrid" aria-label="Choose character"></div>
           <button id="startButton" type="button">Start Innings</button>
         </div>
       </div>
-    </section>
-
-    <footer>
-      <span><kbd>Space</kbd> / tap to flap</span>
-      <span>Original mini game</span>
-    </footer>
-  </main>
-
-  <script>
-    const canvas = document.querySelector("#game");
-    const ctx = canvas.getContext("2d");
-    const scoreEl = document.querySelector("#score");
-    const bestEl = document.querySelector("#best");
-    const overlay = document.querySelector("#overlay");
     const overlayTitle = document.querySelector("#overlayTitle");
     const overlayText = document.querySelector("#overlayText");
     const startButton = document.querySelector("#startButton");
+    const characterGrid = document.querySelector("#characterGrid");
+
+    const CHARACTERS = [
+      {
+        id: "koach",
+        name: "Koach Kholy",
+        jersey: "#1f4fa3",
+        accent: "#f36f21",
+        number: "18",
+        skin: "#f1b384",
+        hair: "fade",
+        beard: true,
+        lips: "#2d1710"
+      },
+      {
+        id: "bobzy",
+        name: "Bobzy the king",
+        jersey: "#168047",
+        accent: "#f7efe2",
+        number: "56",
+        skin: "#e6a875",
+        hair: "fade",
+        beard: false,
+        lips: "#4a2419"
+      },
+      {
+        id: "rizzu",
+        name: "Rizzu Symonds",
+        jersey: "#0f7a42",
+        accent: "#d8f2d3",
+        number: "16",
+        skin: "#d59868",
+        hair: "fade",
+        beard: false,
+        lips: "#f7efe2"
+      },
+      {
+        id: "smudge",
+        name: "Smudge",
+        jersey: "#f1c735",
+        accent: "#2f8f4e",
+        number: "49",
+        skin: "#f0b584",
+        hair: "spike",
+        beard: false,
+        lips: "#5c2c20"
+      }
+    ];
 
     const state = {
       mode: "ready",
       width: canvas.width,
-      height: canvas.height,
-      dpr: 1,
-      time: 0,
       lastTime: 0,
       score: 0,
       best: Number(localStorage.getItem("kohliFlyBest") || 0),
+      selectedCharacter: localStorage.getItem("kohliFlyCharacter") || "koach",
       shake: 0,
       player: {
         x: 124,
-        y: 310,
-        radius: 28,
-        velocity: 0,
-        rotation: 0
-      },
-      gates: [],
-      particles: []
-    };
-
-    const CONFIG = {
-      gravity: 1880,
-      flap: -565,
-      gateSpeed: 205,
-      gateWidth: 74,
-      gap: 232,
-      gateSpacing: 275,
-      groundHeight: 76,
-      safeMargin: 24
-    };
 
     bestEl.textContent = `Best ${state.best}`;
+
+    if (!CHARACTERS.some((character) => character.id === state.selectedCharacter)) {
+      state.selectedCharacter = CHARACTERS[0].id;
+    }
+
+    function getCharacter() {
+      return CHARACTERS.find((character) => character.id === state.selectedCharacter) || CHARACTERS[0];
+    }
+
+    function renderCharacterPicker() {
+      characterGrid.innerHTML = "";
+      for (const character of CHARACTERS) {
+        const button = document.createElement("button");
+        button.className = "character-option";
+        button.type = "button";
+        button.setAttribute("aria-pressed", String(character.id === state.selectedCharacter));
+        button.style.setProperty("--swatch", character.jersey);
+        button.innerHTML = `
+          <span class="character-name">${character.name}</span>
+          <span class="character-meta"><span class="swatch"></span>#${character.number}</span>
+        `;
+        button.addEventListener("click", () => selectCharacter(character.id));
+        characterGrid.append(button);
+      }
+    }
+
+    function selectCharacter(id) {
+      state.selectedCharacter = id;
+      localStorage.setItem("kohliFlyCharacter", id);
+      renderCharacterPicker();
+      draw();
+    }
 
     function fitCanvas() {
       const rect = canvas.getBoundingClientRect();
       state.dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = Math.round(rect.width * state.dpr);
-      canvas.height = Math.round(rect.height * state.dpr);
-      state.width = rect.width;
-      state.height = rect.height;
-      ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
-    }
-
-    function resetGame() {
-      fitCanvas();
-      state.mode = "playing";
-      state.time = 0;
-      state.lastTime = performance.now();
-      state.score = 0;
-      state.shake = 0;
-      state.player.x = Math.max(96, state.width * 0.26);
-      state.player.y = state.height * 0.43;
-      state.player.velocity = 0;
-      state.player.rotation = 0;
-      state.gates = [];
-      state.particles = [];
-      scoreEl.textContent = "0";
-      overlay.classList.add("hidden");
-
-      for (let i = 0; i < 4; i += 1) {
-        spawnGate(state.width + 180 + i * CONFIG.gateSpacing);
-      }
-    }
-
-    function spawnGate(x = state.width + CONFIG.gateSpacing) {
-      const halfGap = CONFIG.gap / 2;
-      const safeTop = halfGap + state.player.radius + CONFIG.safeMargin;
-      const safeBottom = state.height - CONFIG.groundHeight - halfGap - state.player.radius - CONFIG.safeMargin;
-      const centerRange = Math.max(1, safeBottom - safeTop);
-      const center = safeTop + Math.random() * centerRange;
-      state.gates.push({
-        x,
-        gapY: center,
-        passed: false,
-        wobble: Math.random() * Math.PI * 2
-      });
-    }
-
-    function flap() {
-      if (state.mode !== "playing") {
-        resetGame();
-        return;
-      }
-
-      state.player.velocity = CONFIG.flap;
-      for (let i = 0; i < 8; i += 1) {
-        state.particles.push({
-          x: state.player.x - 14,
-          y: state.player.y + 12,
-          vx: -120 - Math.random() * 90,
-          vy: -40 + Math.random() * 80,
-          life: 0.38,
-          color: i % 2 ? "#f36f21" : "#1f4fa3"
-        });
-      }
-    }
-
-    function gameOver() {
-      state.mode = "over";
-      state.shake = 10;
-      state.best = Math.max(state.best, state.score);
-      localStorage.setItem("kohliFlyBest", String(state.best));
-      bestEl.textContent = `Best ${state.best}`;
-      overlayTitle.textContent = state.score > 0 ? `${state.score} runs` : "Bowled!";
-      overlayText.textContent = "Start another innings and keep the timing crisp.";
-      startButton.textContent = "Play Again";
-      overlay.classList.remove("hidden");
-    }
-
-    function update(dt) {
-      state.time += dt;
-
-      if (state.mode === "playing") {
-        state.player.velocity += CONFIG.gravity * dt;
-        state.player.y += state.player.velocity * dt;
-        state.player.rotation = Math.max(-0.42, Math.min(0.8, state.player.velocity / 760));
-
-        for (const gate of state.gates) {
-          gate.x -= CONFIG.gateSpeed * dt;
-          gate.wobble += dt * 2;
-
-          if (!gate.passed && gate.x + CONFIG.gateWidth < state.player.x - state.player.radius) {
-            gate.passed = true;
-            state.score += 1;
-            scoreEl.textContent = String(state.score);
-          }
-        }
-
-        if (state.gates.length && state.gates[0].x < -CONFIG.gateWidth - 20) {
-          state.gates.shift();
-          const lastX = state.gates.at(-1)?.x || state.width;
-          spawnGate(lastX + CONFIG.gateSpacing);
-        }
-
-        const floor = state.height - CONFIG.groundHeight;
-        if (state.player.y + state.player.radius > floor || state.player.y - state.player.radius < 0) {
-          gameOver();
-        }
-
-        for (const gate of state.gates) {
-          if (hitsGate(gate)) {
-            gameOver();
-            break;
-          }
-        }
-      }
-
-      for (const particle of state.particles) {
-        particle.x += particle.vx * dt;
-        particle.y += particle.vy * dt;
-        particle.life -= dt;
-      }
-
-      state.particles = state.particles.filter((particle) => particle.life > 0);
-      state.shake = Math.max(0, state.shake - dt * 40);
-    }
-
-    function hitsGate(gate) {
-      const p = state.player;
-      const withinX = p.x + p.radius > gate.x && p.x - p.radius < gate.x + CONFIG.gateWidth;
-      if (!withinX) return false;
-
-      const topBottom = gate.gapY - CONFIG.gap / 2;
-      const bottomTop = gate.gapY + CONFIG.gap / 2;
-      return p.y - p.radius < topBottom || p.y + p.radius > bottomTop;
-    }
-
-    function draw() {
-      ctx.save();
-      ctx.clearRect(0, 0, state.width, state.height);
-
-      if (state.shake > 0) {
-        ctx.translate((Math.random() - 0.5) * state.shake, (Math.random() - 0.5) * state.shake);
-      }
-
-      drawSky();
-      drawStands();
-      drawGates();
-      drawParticles();
-      drawPlayer();
-      drawGround();
-      ctx.restore();
-    }
-
-    function drawSky() {
-      const gradient = ctx.createLinearGradient(0, 0, 0, state.height);
-      gradient.addColorStop(0, "#5fc1ee");
-      gradient.addColorStop(0.54, "#a9e0f3");
-      gradient.addColorStop(1, "#d7f5dc");
-      ctx.fillStyle = gradient;
-      ctx.fillRect(0, 0, state.width, state.height);
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0.62)";
-      for (let i = 0; i < 5; i += 1) {
-        const x = ((state.time * 18 + i * 150) % (state.width + 180)) - 120;
-        const y = 72 + (i % 3) * 58;
-        drawCloud(x, y, 1 + (i % 2) * 0.28);
-      }
-    }
-
-    function drawCloud(x, y, scale) {
-      ctx.beginPath();
-      ctx.ellipse(x, y, 34 * scale, 18 * scale, 0, 0, Math.PI * 2);
-      ctx.ellipse(x + 28 * scale, y - 8 * scale, 28 * scale, 21 * scale, 0, 0, Math.PI * 2);
-      ctx.ellipse(x + 58 * scale, y, 36 * scale, 18 * scale, 0, 0, Math.PI * 2);
-      ctx.fill();
-    }
-
-    function drawStands() {
-      const baseY = state.height - CONFIG.groundHeight - 58;
-      ctx.fillStyle = "rgba(20, 43, 70, 0.36)";
-      ctx.fillRect(0, baseY, state.width, 58);
-      for (let x = -20; x < state.width + 20; x += 34) {
-        const palette = ["#1f4fa3", "#f36f21", "#f7efe2", "#21633d"];
-        ctx.fillStyle = palette[Math.abs(Math.floor(x / 34)) % palette.length];
-        ctx.fillRect(x, baseY + 11 + ((x / 34) % 2) * 8, 22, 18);
-      }
-    }
-
-    function drawGates() {
-      for (const gate of state.gates) {
-        drawGate(gate.x, 0, gate.gapY - CONFIG.gap / 2, true, gate.wobble);
-        drawGate(gate.x, gate.gapY + CONFIG.gap / 2, state.height - CONFIG.groundHeight, false, gate.wobble);
-      }
-    }
-
-    function drawGate(x, y1, y2, top, wobble) {
-      const width = CONFIG.gateWidth;
-      const stumpGap = width / 4;
-      const shadow = top ? 5 : -5;
-
-      ctx.fillStyle = "rgba(0, 0, 0, 0.18)";
-      ctx.fillRect(x + shadow, y1, width, y2 - y1);
-
-      ctx.fillStyle = "#f6c44f";
-      for (let i = 1; i <= 3; i += 1) {
-        const sx = x + i * stumpGap - 6;
-        ctx.fillRect(sx, y1, 12, y2 - y1);
-        ctx.fillStyle = "rgba(89, 51, 18, 0.22)";
-        ctx.fillRect(sx + 8, y1, 4, y2 - y1);
-        ctx.fillStyle = "#f6c44f";
-      }
-
-      ctx.fillStyle = "#8b4b1d";
-      const bailY = top ? y2 - 12 : y1 + 8;
-      ctx.save();
-      ctx.translate(x + width / 2, bailY);
-      ctx.rotate(Math.sin(wobble) * 0.02);
-      ctx.fillRect(-width / 2 - 4, -5, width + 8, 10);
-      ctx.restore();
-
-      ctx.fillStyle = "rgba(255, 255, 255, 0.34)";
-      ctx.fillRect(x + 9, y1 + 12, 7, Math.max(0, y2 - y1 - 24));
-    }
-
-    function drawParticles() {
-      for (const particle of state.particles) {
-        ctx.globalAlpha = Math.max(0, particle.life / 0.38);
-        ctx.fillStyle = particle.color;
-        ctx.beginPath();
-        ctx.arc(particle.x, particle.y, 3.2, 0, Math.PI * 2);
-        ctx.fill();
-      }
-      ctx.globalAlpha = 1;
-    }
 
     function drawPlayer() {
       const p = state.player;
+      const character = getCharacter();
       ctx.save();
       ctx.translate(p.x, p.y);
       ctx.rotate(p.rotation);
 
-      ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
-      ctx.beginPath();
-      ctx.ellipse(5, 34, 28, 8, 0, 0, Math.PI * 2);
-      ctx.fill();
-
       drawBat(-35, 7);
 
       ctx.fillStyle = "#1f4fa3";
+      ctx.fillStyle = character.jersey;
       roundRect(-24, -6, 48, 43, 12);
       ctx.fill();
       ctx.fillStyle = "#f36f21";
+      ctx.fillStyle = character.accent;
       ctx.fillRect(-21, 8, 42, 5);
       ctx.fillRect(-7, -4, 14, 39);
 
       ctx.fillStyle = "#f1b384";
+      ctx.fillStyle = character.skin;
       ctx.beginPath();
       ctx.arc(0, -25, 23, 0, Math.PI * 2);
       ctx.fill();
@@ -539,105 +225,71 @@
       ctx.beginPath();
       ctx.arc(0, -34, 24, Math.PI, Math.PI * 2);
       ctx.fill();
+      drawHair(character.hair);
 
       ctx.fillStyle = "#211515";
       ctx.beginPath();
       ctx.ellipse(0, -17, 18, 11, 0, 0, Math.PI);
       ctx.fill();
       ctx.fillRect(-16, -22, 32, 9);
+      if (character.beard) {
+        ctx.fillStyle = "#211515";
+        ctx.beginPath();
+        ctx.ellipse(0, -17, 18, 11, 0, 0, Math.PI);
+        ctx.fill();
+        ctx.fillRect(-16, -22, 32, 9);
+      }
 
       ctx.fillStyle = "#ffffff";
       ctx.beginPath();
-      ctx.arc(-8, -24, 4, 0, Math.PI * 2);
-      ctx.arc(9, -24, 4, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.fillStyle = "#171717";
-      ctx.beginPath();
-      ctx.arc(-7, -24, 1.8, 0, Math.PI * 2);
       ctx.arc(10, -24, 1.8, 0, Math.PI * 2);
       ctx.fill();
 
       ctx.strokeStyle = "#2d1710";
+      ctx.strokeStyle = character.lips;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.arc(1, -16, 7, 0.08 * Math.PI, 0.92 * Math.PI);
-      ctx.stroke();
-
-      ctx.fillStyle = "#f7efe2";
       ctx.font = "900 13px Inter, system-ui, sans-serif";
       ctx.textAlign = "center";
       ctx.textBaseline = "middle";
       ctx.fillText("18", 0, 17);
+      ctx.fillText(character.number, 0, 17);
 
       ctx.restore();
+    }
+
+    function drawHair(style) {
+      ctx.fillStyle = "#191413";
+      if (style === "spike") {
+        ctx.beginPath();
+        ctx.moveTo(-20, -36);
+        ctx.lineTo(-14, -55);
+        ctx.lineTo(-7, -38);
+        ctx.lineTo(0, -58);
+        ctx.lineTo(8, -38);
+        ctx.lineTo(16, -54);
+        ctx.lineTo(22, -34);
+        ctx.quadraticCurveTo(4, -45, -20, -36);
+        ctx.fill();
+        return;
+      }
+
+      ctx.beginPath();
+      ctx.arc(0, -34, 24, Math.PI, Math.PI * 2);
+      ctx.fill();
+      ctx.fillStyle = "rgba(247, 239, 226, 0.22)";
+      ctx.fillRect(-23, -33, 7, 10);
+      ctx.fillRect(16, -33, 7, 10);
     }
 
     function drawBat(x, y) {
       ctx.save();
       ctx.translate(x, y);
-      ctx.rotate(-0.75);
-      ctx.fillStyle = "#8d5126";
-      roundRect(-4, -23, 8, 48, 4);
-      ctx.fill();
-      ctx.fillStyle = "#d8b175";
-      roundRect(-11, 8, 22, 58, 8);
-      ctx.fill();
-      ctx.fillStyle = "rgba(255, 255, 255, 0.34)";
-      ctx.fillRect(-6, 15, 4, 44);
-      ctx.restore();
-    }
-
-    function drawGround() {
-      const y = state.height - CONFIG.groundHeight;
-      ctx.fillStyle = "#287b46";
-      ctx.fillRect(0, y, state.width, CONFIG.groundHeight);
-      ctx.fillStyle = "#236d3d";
-      for (let x = -20; x < state.width + 30; x += 38) {
-        ctx.beginPath();
-        ctx.moveTo(x, state.height);
-        ctx.lineTo(x + 18, y);
-        ctx.lineTo(x + 38, state.height);
-        ctx.fill();
-      }
-      ctx.fillStyle = "rgba(247, 239, 226, 0.72)";
-      ctx.fillRect(0, y + 8, state.width, 4);
-    }
-
-    function roundRect(x, y, width, height, radius) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-    }
-
-    function loop(now) {
-      const dt = Math.min(0.032, (now - state.lastTime) / 1000 || 0);
-      state.lastTime = now;
-      update(dt);
-      draw();
-      requestAnimationFrame(loop);
-    }
-
-    startButton.addEventListener("click", flap);
-    canvas.addEventListener("pointerdown", flap);
-    window.addEventListener("keydown", (event) => {
-      if (event.code === "Space" || event.code === "ArrowUp") {
-        event.preventDefault();
-        flap();
-      }
     });
     window.addEventListener("resize", fitCanvas);
 
+    renderCharacterPicker();
     fitCanvas();
     draw();
     requestAnimationFrame(loop);
-  </script>
-</body>
-</html>
